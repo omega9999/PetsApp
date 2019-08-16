@@ -6,7 +6,9 @@ Rif GIT:
 https://github.com/udacity/ud845-Pets
 
 Casi risolti:
-    
+1) bottone FAB (FloatingActionButton)
+2) menu' options
+3) 
     
 
 TODO:

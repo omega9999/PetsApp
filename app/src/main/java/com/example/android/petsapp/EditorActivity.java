@@ -2,10 +2,6 @@ package com.example.android.petsapp;
 
 
 import android.os.Bundle;
-
-import androidx.core.app.NavUtils;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +10,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
 
 /**
  * Allows user to create a new pet or edit an existing one.
@@ -54,11 +53,11 @@ public class EditorActivity extends AppCompatActivity {
                 String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.gender_male))) {
-                        mGender = 1; // Male
+                        mGender = GENDER_MALE;
                     } else if (selection.equals(getString(R.string.gender_female))) {
-                        mGender = 2; // Female
+                        mGender = GENDER_FEMALE;
                     } else {
-                        mGender = 0; // Unknown
+                        mGender = GENDER_UNKNOWN;
                     }
                 }
             }
@@ -66,7 +65,7 @@ public class EditorActivity extends AppCompatActivity {
             // Because AdapterView is an abstract class, onNothingSelected must be defined
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mGender = 0; // Unknown
+                mGender = GENDER_UNKNOWN;
             }
         });
     }
@@ -96,5 +95,11 @@ public class EditorActivity extends AppCompatActivity {
     private EditText mWeightEditText;
     private Spinner mGenderSpinner;
     private int mGender = 0;
+
+    private static final int GENDER_MALE = 1;
+    private static final int GENDER_FEMALE = 2;
+    private static final int GENDER_UNKNOWN = 0;
+
+    private static final String TAG = EditorActivity.class.getSimpleName();
 
 }
