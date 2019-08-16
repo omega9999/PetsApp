@@ -14,6 +14,9 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import com.example.android.petsapp.db.PetContract.PetEntry;
+
+
 /**
  * Allows user to create a new pet or edit an existing one.
  */
@@ -53,11 +56,11 @@ public class EditorActivity extends AppCompatActivity {
                 String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.gender_male))) {
-                        mGender = GENDER_MALE;
+                        mGender = PetEntry.GENDER_MALE;
                     } else if (selection.equals(getString(R.string.gender_female))) {
-                        mGender = GENDER_FEMALE;
+                        mGender = PetEntry.GENDER_FEMALE;
                     } else {
-                        mGender = GENDER_UNKNOWN;
+                        mGender = PetEntry.GENDER_UNKNOWN;
                     }
                 }
             }
@@ -65,7 +68,7 @@ public class EditorActivity extends AppCompatActivity {
             // Because AdapterView is an abstract class, onNothingSelected must be defined
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mGender = GENDER_UNKNOWN;
+                mGender = PetEntry.GENDER_UNKNOWN;
             }
         });
     }
@@ -96,9 +99,6 @@ public class EditorActivity extends AppCompatActivity {
     private Spinner mGenderSpinner;
     private int mGender = 0;
 
-    private static final int GENDER_MALE = 1;
-    private static final int GENDER_FEMALE = 2;
-    private static final int GENDER_UNKNOWN = 0;
 
     private static final String TAG = EditorActivity.class.getSimpleName();
 

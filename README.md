@@ -4,15 +4,19 @@ https://classroom.udacity.com/courses/ud845
 
 Rif GIT:
 https://github.com/udacity/ud845-Pets
+https://github.com/udacity/Sunshine-Version-2
 
 Casi risolti:
 1) bottone FAB (FloatingActionButton)
 2) menu' options
-3) 
+3) salvataggio dati con SQLite:
+    - https://developer.android.com/training/data-storage/sqlite.html
+    - https://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
     
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
+2) sostituire l'accesso al db usando Room (https://developer.android.com/training/data-storage/room)
 
 Altri link utili:
 Datatypes In SQLite: https://www.sqlite.org/datatype3.html

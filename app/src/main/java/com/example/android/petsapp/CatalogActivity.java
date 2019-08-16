@@ -1,12 +1,20 @@
 package com.example.android.petsapp;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.android.petsapp.db.PetContract.PetEntry;
+import com.example.android.petsapp.db.PetDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
@@ -25,6 +33,14 @@ public class CatalogActivity extends AppCompatActivity {
             Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
             startActivity(intent);
         });
+
+        this.mHandlerThread = new HandlerThread(CatalogActivity.class + ".Thread");
+        this.mHandlerThread.start(); // close it with mHandlerThread.quit()
+        this.mHandler = new Handler(this.mHandlerThread.getLooper());
+        this.mUIHandler = new Handler(Looper.getMainLooper());
+
+
+        displayDatabaseInfo();
     }
 
     @Override
@@ -50,6 +66,29 @@ public class CatalogActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * Temporary helper method to display information in the onscreen TextView about the state of
+     * the pets database.
+     */
+    private void displayDatabaseInfo() {
+        mHandler.post(()-> {
+            PetDbHelper mDbHelper = new PetDbHelper(this);
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            try (Cursor cursor = db.rawQuery("SELECT * FROM " + PetEntry.TABLE_NAME, null)) {
+                final int count = cursor.getCount();
+                mUIHandler.post(()-> {
+                    TextView displayView = findViewById(R.id.text_view_pet);
+                    displayView.setText("Number of rows in pets database table: " + count);
+                });
+            }
+        });
+    }
+
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+    private Handler mUIHandler;
+
 
     private static final String TAG = CatalogActivity.class.getSimpleName();
 }
