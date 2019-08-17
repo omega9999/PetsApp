@@ -12,7 +12,8 @@ Casi risolti:
 3) salvataggio dati con SQLite:
     - https://developer.android.com/training/data-storage/sqlite.html
     - https://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
-    
+    - https://developer.android.com/reference/android/content/ContentValues.html
+4) controllo compile-time dei valori corretti in un insieme: https://developer.android.com/reference/android/support/annotation/IntDef
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
