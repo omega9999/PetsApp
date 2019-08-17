@@ -11,8 +11,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import androidx.annotation.CheckResult;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.android.petsapp.db.DbUtils;
+import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
 import com.example.android.petsapp.db.PetDbHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,28 +42,45 @@ public class CatalogActivity extends AppCompatActivity {
         this.mHandlerThread.start(); // close it with mHandlerThread.quit()
         this.mHandler = new Handler(this.mHandlerThread.getLooper());
         this.mUIHandler = new Handler(Looper.getMainLooper());
+    }
 
-
+    @Override
+    protected void onStart() {
+        super.onStart();
         displayDatabaseInfo();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_catalog.xml file.
-        // This adds menu items to the app bar.
+    protected void onDestroy() {
+        this.mHandlerThread.quit();
+        super.onDestroy();
+    }
+
+    /**
+     * method to add menu items to the app bar.
+     * @param menu
+     * @return
+     */
+    @CheckResult
+    @Override
+    public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
         getMenuInflater().inflate(R.menu.menu_catalog, menu);
         return true;
     }
 
+    /**
+     * manage click on menu app bar
+     * @param item
+     * @return
+     */
+    @CheckResult
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
+    public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         switch (item.getItemId()) {
-            // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
-                // Do nothing for now
+                insertPet();
+
                 return true;
-            // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
                 // Do nothing for now
                 return true;
@@ -73,15 +94,27 @@ public class CatalogActivity extends AppCompatActivity {
      */
     private void displayDatabaseInfo() {
         mHandler.post(()-> {
-            PetDbHelper mDbHelper = new PetDbHelper(this);
-            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            final PetDbHelper mDbHelper = new PetDbHelper(this);
+            final SQLiteDatabase db = mDbHelper.getReadableDatabase();
             try (Cursor cursor = db.rawQuery("SELECT * FROM " + PetEntry.TABLE_NAME, null)) {
                 final int count = cursor.getCount();
                 mUIHandler.post(()-> {
-                    TextView displayView = findViewById(R.id.text_view_pet);
+                    final TextView displayView = findViewById(R.id.text_view_pet);
                     displayView.setText("Number of rows in pets database table: " + count);
                 });
             }
+            db.close();
+        });
+    }
+
+    /**
+     * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
+     */
+    private void insertPet() {
+        mHandler.post(()-> {
+            final Pet dummy = Pet.getDummyInstance();
+            DbUtils.insertPet(this, dummy);
+            displayDatabaseInfo();
         });
     }
 

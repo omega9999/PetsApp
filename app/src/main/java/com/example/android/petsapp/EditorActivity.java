@@ -2,6 +2,9 @@ package com.example.android.petsapp;
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +17,8 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import com.example.android.petsapp.db.DbUtils;
+import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
 
 
@@ -21,6 +26,28 @@ import com.example.android.petsapp.db.PetContract.PetEntry;
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_editor, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_save:
+                insertPet();
+                return true;
+            case R.id.action_delete:
+                return true;
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +60,17 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner = findViewById(R.id.spinner_gender);
 
         setupSpinner();
+
+        this.mHandlerThread = new HandlerThread(CatalogActivity.class + ".Thread");
+        this.mHandlerThread.start(); // close it with mHandlerThread.quit()
+        this.mHandler = new Handler(this.mHandlerThread.getLooper());
+        this.mUIHandler = new Handler(Looper.getMainLooper());
+    }
+
+    @Override
+    protected void onDestroy() {
+        this.mHandlerThread.quit();
+        super.onDestroy();
     }
 
     /**
@@ -73,31 +111,28 @@ public class EditorActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_editor, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_save:
-                return true;
-            case R.id.action_delete:
-                return true;
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+    private void insertPet() {
+        final Pet pet = new Pet();
+        pet.setName(mNameEditText.getText().toString().trim())
+                .setBreed(mBreedEditText.getText().toString().trim())
+                .setGender(mGender)
+                .setWeight(Integer.valueOf(mWeightEditText.getText().toString().trim()));
+        mHandler.post(() -> {
+            DbUtils.insertPet(this, pet);
+            EditorActivity.this.finish();
+        });
     }
 
     private EditText mNameEditText;
     private EditText mBreedEditText;
     private EditText mWeightEditText;
     private Spinner mGenderSpinner;
-    private int mGender = 0;
+    private int mGender;
+
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+    private Handler mUIHandler;
 
 
     private static final String TAG = EditorActivity.class.getSimpleName();
