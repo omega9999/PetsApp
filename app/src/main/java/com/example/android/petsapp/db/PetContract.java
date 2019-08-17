@@ -3,12 +3,19 @@ package com.example.android.petsapp.db;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+
+import java.lang.annotation.Retention;
+
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 
 public final class PetContract {
 
     private PetContract() {
     }
+
 
     public static abstract class PetEntry implements BaseColumns {
         public static final String TABLE_NAME = "pets";
@@ -19,6 +26,10 @@ public final class PetContract {
         public static final String COLUMN_PET_WEIGHT = "weight";
 
 
+        @Retention(SOURCE) // check on compile time
+        @IntDef({GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE}) // values allowed
+        public @interface Gender {} // name new annotation
+        
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
