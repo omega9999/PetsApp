@@ -13,6 +13,7 @@ Casi risolti:
     - https://developer.android.com/training/data-storage/sqlite.html
     - https://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
     - https://developer.android.com/reference/android/content/ContentValues.html
+    - https://developer.android.com/reference/android/database/Cursor.html
 4) controllo compile-time dei valori corretti in un insieme: https://developer.android.com/reference/android/support/annotation/IntDef
 
 TODO:

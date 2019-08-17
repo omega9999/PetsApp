@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.example.android.petsapp.db.PetContract.PetEntry;
 
-public class PetDbHelper extends SQLiteOpenHelper {
+class PetDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Pet.db";

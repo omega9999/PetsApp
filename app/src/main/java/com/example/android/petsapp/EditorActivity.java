@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
@@ -26,6 +28,14 @@ import com.example.android.petsapp.db.PetContract.PetEntry;
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
+    public EditorActivity() {
+        super();
+        Log.i(TAG, "init HandlerThread");
+        this.mHandlerThread = new HandlerThread(this.getClass() + ".Thread");
+        this.mHandlerThread.start(); // close it with mHandlerThread.quit()
+        this.mHandler = new Handler(this.mHandlerThread.getLooper());
+        this.mUIHandler = new Handler(Looper.getMainLooper());
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -60,11 +70,6 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner = findViewById(R.id.spinner_gender);
 
         setupSpinner();
-
-        this.mHandlerThread = new HandlerThread(CatalogActivity.class + ".Thread");
-        this.mHandlerThread.start(); // close it with mHandlerThread.quit()
-        this.mHandler = new Handler(this.mHandlerThread.getLooper());
-        this.mUIHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -119,7 +124,14 @@ public class EditorActivity extends AppCompatActivity {
                 .setGender(mGender)
                 .setWeight(Integer.valueOf(mWeightEditText.getText().toString().trim()));
         mHandler.post(() -> {
-            DbUtils.insertPet(this, pet);
+            final Pet newPet = DbUtils.insertPet(this, pet);
+            mUIHandler.post(() -> {
+                if (newPet.getId() > 0) {
+                    Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+                }
+            });
             EditorActivity.this.finish();
         });
     }
