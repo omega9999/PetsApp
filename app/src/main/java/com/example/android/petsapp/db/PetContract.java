@@ -1,6 +1,7 @@
 package com.example.android.petsapp.db;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 import androidx.annotation.IntDef;
@@ -13,17 +14,25 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 public final class PetContract {
 
+    // see AndroidManifest.xml for CONTENT_AUTHORITY
+    public static final String CONTENT_AUTHORITY = "com.example.android.pets";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_PETS = "pets";
+
     private PetContract() {
     }
 
 
     public static abstract class PetEntry implements BaseColumns {
-        public static final String TABLE_NAME = "pets";
-        public static final String _ID = BaseColumns._ID;
-        public static final String COLUMN_PET_NAME = "name";
-        public static final String COLUMN_PET_BREED = "breed";
-        public static final String COLUMN_PET_GENDER = "gender";
-        public static final String COLUMN_PET_WEIGHT = "weight";
+        // Uri for ContentProvider to access table pets
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
+
+        static final String TABLE_NAME = "pets";
+        static final String _ID = BaseColumns._ID;
+        static final String COLUMN_PET_NAME = "name";
+        static final String COLUMN_PET_BREED = "breed";
+        static final String COLUMN_PET_GENDER = "gender";
+        static final String COLUMN_PET_WEIGHT = "weight";
 
 
         @Retention(SOURCE) // check on compile time

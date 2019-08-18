@@ -31,7 +31,7 @@
 
         <provider
             android:name=".db.PetProvider"
-            android:authorities="com.example.android.petsapp"
+            android:authorities="com.example.android.pets"
             android:enabled="true"
             android:exported="false" />
 

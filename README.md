@@ -9,17 +9,21 @@ https://github.com/udacity/Sunshine-Version-2
 Casi risolti:
 1) bottone FAB (FloatingActionButton)
 2) menu' options
-3) salvataggio dati con SQLite:
+3) salvataggio dati con SQLite: N.B. se il nome del db in chi estende SQLiteOpenHelper e' null, e' un db in memory (scompare quando si fa la close della connessione)
     - https://developer.android.com/training/data-storage/sqlite.html
     - https://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html
     - https://developer.android.com/reference/android/content/ContentValues.html
     - https://developer.android.com/reference/android/database/Cursor.html
+    - https://developer.android.com/guide/topics/providers/content-provider-basics.html#Query
 4) controllo compile-time dei valori corretti in un insieme: https://developer.android.com/reference/android/support/annotation/IntDef
 5) ContentResolver, ContentProvider e CursorLoader:
     - https://developer.android.com/guide/topics/manifest/provider-element.html
+    - https://developer.android.com/reference/android/content/ContentProvider.html
+    - https://developer.android.com/guide/topics/providers/content-provider-creating.html
+    - https://developer.android.com/reference/android/content/UriMatcher.html
 5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne
     - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
-    - risultato (?): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
+    - risultato (Cursor,Uri,int): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
       
 
 TODO:
