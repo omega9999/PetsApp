@@ -15,10 +15,17 @@ Casi risolti:
     - https://developer.android.com/reference/android/content/ContentValues.html
     - https://developer.android.com/reference/android/database/Cursor.html
 4) controllo compile-time dei valori corretti in un insieme: https://developer.android.com/reference/android/support/annotation/IntDef
+5) ContentResolver, ContentProvider e CursorLoader:
+    - https://developer.android.com/guide/topics/manifest/provider-element.html
+5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne
+    - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
+    - risultato (?): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
+      
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
 2) sostituire l'accesso al db usando Room (https://developer.android.com/training/data-storage/room)
+3) usare le https://developer.android.com/guide/topics/ui/layout/recyclerview.html
 
 Altri link utili:
 Datatypes In SQLite: https://www.sqlite.org/datatype3.html

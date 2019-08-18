@@ -5,12 +5,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-import android.widget.TextView;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 
-import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.PetContract.PetEntry;
 
 import java.util.ArrayList;
