@@ -8,7 +8,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,7 +30,7 @@ public class PetProvider extends ContentProvider {
 
     @Override
     protected void finalize() throws Throwable {
-        if (this.mDatabase != null){
+        if (this.mDatabase != null) {
             this.mDatabase.close();
         }
         super.finalize();
@@ -62,7 +61,7 @@ public class PetProvider extends ContentProvider {
     public Uri insert(@NonNull final Uri uri, @Nullable final ContentValues values) {
         int match = URI_MATCHER.match(uri);
         if (match == PETS) {
-            validation(values);
+            validationInsert(values);
 
             long id = mDatabase.insert(PetEntry.TABLE_NAME, null, values);
             // return Uri with id appended
@@ -79,13 +78,17 @@ public class PetProvider extends ContentProvider {
                       String[] selectionArgs) {
         // TODO: Implement this to handle requests to update one or more rows.
         int match = URI_MATCHER.match(uri);
-        if (match == PET_ID) {
-            //TODO
-        } else {
-            // URI unknown
-            throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
+        switch (match) {
+            case PETS:
+                return updatePet(uri, values, selection, selectionArgs);
+            case PET_ID:
+                String selectionLocal = PetEntry._ID + "=?";
+                String[] selectionArgsLocal = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updatePet(uri, values, selectionLocal, selectionArgsLocal);
+            default:
+                // URI unknown
+                throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
         }
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -115,8 +118,8 @@ public class PetProvider extends ContentProvider {
     }
 
 
-    private void validation(@Nullable final ContentValues values){
-        if (values == null){
+    private void validationInsert(@Nullable final ContentValues values) {
+        if (values == null) {
             throw new IllegalArgumentException("Missing data of pet");
         }
 
@@ -134,7 +137,7 @@ public class PetProvider extends ContentProvider {
         if (gender == null) {
             throw new IllegalArgumentException("Pet requires a gender");
         }
-        if (!PetEntry.isValidGender(gender)){
+        if (!PetEntry.isValidGender(gender)) {
             throw new IllegalArgumentException("Pet requires a allowed gender");
         }
 
@@ -142,12 +145,53 @@ public class PetProvider extends ContentProvider {
         if (weight == null) {
             throw new IllegalArgumentException("Pet requires a weight");
         }
-        if (weight < 0){
+        if (weight < 0) {
             throw new IllegalArgumentException("Pet requires a weight not negative: " + weight);
+        }
+    }
+
+    private int updatePet(Uri uri, ContentValues values, String whereClause, String[] whereArgs) {
+        if (values == null || values.size() == 0) {
+            return 0;
+        }
+        if (values.containsKey(PetEntry.COLUMN_PET_NAME)) {
+            final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
+            if (TextUtils.isEmpty(name)) {
+                throw new IllegalArgumentException("Pet requires a name");
+            }
+        }
+
+        if (values.containsKey(PetEntry.COLUMN_PET_BREED)) {
+            final String breed = values.getAsString(PetEntry.COLUMN_PET_BREED);
+            if (TextUtils.isEmpty(breed)) {
+                throw new IllegalArgumentException("Pet requires a breed");
+            }
+        }
+
+        if (values.containsKey(PetEntry.COLUMN_PET_GENDER)) {
+            final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
+            if (gender == null) {
+                throw new IllegalArgumentException("Pet requires a gender");
+            }
+            if (!PetEntry.isValidGender(gender)) {
+                throw new IllegalArgumentException("Pet requires a allowed gender");
+            }
+        }
+
+        if (values.containsKey(PetEntry.COLUMN_PET_WEIGHT)) {
+            final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
+            if (weight == null) {
+                throw new IllegalArgumentException("Pet requires a weight");
+            }
+            if (weight < 0) {
+                throw new IllegalArgumentException("Pet requires a weight not negative: " + weight);
+            }
         }
 
 
+        return mDatabase.update(PetEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
+
 
     private PetDbHelper mDbHelper;
     private SQLiteDatabase mDatabase;
