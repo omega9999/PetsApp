@@ -21,7 +21,7 @@ Casi risolti:
     - https://developer.android.com/reference/android/content/ContentProvider.html
     - https://developer.android.com/guide/topics/providers/content-provider-creating.html
     - https://developer.android.com/reference/android/content/UriMatcher.html
-5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne
+5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne + check centralizzato dei dati inseriti
     - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
     - risultato (Cursor,Uri,int): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
       

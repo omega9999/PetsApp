@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -61,6 +62,8 @@ public class PetProvider extends ContentProvider {
     public Uri insert(@NonNull final Uri uri, @Nullable final ContentValues values) {
         int match = URI_MATCHER.match(uri);
         if (match == PETS) {
+            validation(values);
+
             long id = mDatabase.insert(PetEntry.TABLE_NAME, null, values);
             // return Uri with id appended
             return ContentUris.withAppendedId(uri, id);
@@ -69,6 +72,7 @@ public class PetProvider extends ContentProvider {
             throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
         }
     }
+
 
     @Override
     public int update(Uri uri, ContentValues values, String selection,
@@ -108,6 +112,41 @@ public class PetProvider extends ContentProvider {
         // TODO: Implement this to handle requests for the MIME type of the data
         // at the given URI.
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
+    private void validation(@Nullable final ContentValues values){
+        if (values == null){
+            throw new IllegalArgumentException("Missing data of pet");
+        }
+
+        final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
+        if (TextUtils.isEmpty(name)) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        final String breed = values.getAsString(PetEntry.COLUMN_PET_BREED);
+        if (TextUtils.isEmpty(breed)) {
+            throw new IllegalArgumentException("Pet requires a breed");
+        }
+
+        final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
+        if (gender == null) {
+            throw new IllegalArgumentException("Pet requires a gender");
+        }
+        if (!PetEntry.isValidGender(gender)){
+            throw new IllegalArgumentException("Pet requires a allowed gender");
+        }
+
+        final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
+        if (weight == null) {
+            throw new IllegalArgumentException("Pet requires a weight");
+        }
+        if (weight < 0){
+            throw new IllegalArgumentException("Pet requires a weight not negative: " + weight);
+        }
+
+
     }
 
     private PetDbHelper mDbHelper;

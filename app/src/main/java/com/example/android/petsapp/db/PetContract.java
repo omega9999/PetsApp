@@ -37,11 +37,15 @@ public final class PetContract {
 
         @Retention(SOURCE) // check on compile time
         @IntDef({GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE}) // values allowed
-        public @interface Gender {} // name new annotation
+        @interface Gender {} // name new annotation
         
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
+
+        static boolean isValidGender(int gender) {
+            return gender == GENDER_UNKNOWN || gender == GENDER_MALE || gender == GENDER_FEMALE;
+        }
 
         static void onCreate(@NonNull final SQLiteDatabase db) {
             db.execSQL(SQL_CREATE_ENTRIES);
