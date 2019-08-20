@@ -24,7 +24,7 @@ Casi risolti:
 5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne + check centralizzato dei dati inseriti
     - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
     - risultato (Cursor,Uri,int): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
-6) utilizzo annotazione @StringRes
+6) utilizzo annotazione @StringRes, https://developer.android.com/studio/write/annotations.htm
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
@@ -34,6 +34,7 @@ TODO:
 Altri link utili:
 Datatypes In SQLite: https://www.sqlite.org/datatype3.html
 Data and file storage: https://developer.android.com/guide/topics/data/data-storage.html
+https://developer.android.com/guide/components/intents-filters.html#Building
 
 Comandi sqlite3 utili (https://www.sqlite.org/cli.html):
 - .mode : provides several output options aside from column (".mode tabs" to have tab-separated values, ".mode ascii")

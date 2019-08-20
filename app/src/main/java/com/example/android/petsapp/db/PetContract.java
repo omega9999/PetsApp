@@ -1,5 +1,6 @@
 package com.example.android.petsapp.db;
 
+import android.content.ContentResolver;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -15,9 +16,9 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 public final class PetContract {
 
     // see AndroidManifest.xml for CONTENT_AUTHORITY
-    public static final String CONTENT_AUTHORITY = "com.example.android.pets";
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-    public static final String PATH_PETS = "pets";
+    static final String CONTENT_AUTHORITY = "com.example.android.pets";
+    private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    static final String PATH_PETS = "pets";
 
     private PetContract() {
     }
@@ -25,7 +26,18 @@ public final class PetContract {
 
     public static abstract class PetEntry implements BaseColumns {
         // Uri for ContentProvider to access table pets
-        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
+        static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
+
+        /**
+         * The MIME type of the {@link #CONTENT_URI} for a list of pets.
+         */
+        static final String CONTENT_LIST_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PETS;
+
+        /**
+         * The MIME type of the {@link #CONTENT_URI} for a single pet.
+         */
+        static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PETS;
+
 
         static final String TABLE_NAME = "pets";
         static final String _ID = BaseColumns._ID;
@@ -35,10 +47,18 @@ public final class PetContract {
         static final String COLUMN_PET_WEIGHT = "weight";
 
 
-        @Retention(SOURCE) // check on compile time
-        @IntDef({GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE}) // values allowed
-        @interface Gender {} // name new annotation
-        
+        // check on compile time
+        @Retention(SOURCE)
+        // values allowed
+        @IntDef({
+                GENDER_UNKNOWN,
+                GENDER_MALE,
+                GENDER_FEMALE
+        })
+        @interface Gender {
+            // name new annotation
+        }
+
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;

@@ -28,20 +28,19 @@ public class PetProvider extends ContentProvider {
             PetDbHelper mDbHelper = new PetDbHelper(getContext());
             Log.d(TAG, "Open connection (writable) to database");
             this.mDatabase = mDbHelper.getWritableDatabase();
-        }
-        else{
+        } else {
             throw new RuntimeException("Context null!!!");
         }
         return true;
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    public void shutdown() {
         if (this.mDatabase != null) {
             Log.d(TAG, "Close connection to database");
             this.mDatabase.close();
         }
-        super.finalize();
+        super.shutdown();
     }
 
     @Override
@@ -82,9 +81,7 @@ public class PetProvider extends ContentProvider {
 
 
     @Override
-    public int update(@NonNull final Uri uri, @Nullable final ContentValues values, String selection,
-                      String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
+    public int update(@NonNull final Uri uri, @Nullable final ContentValues values, @Nullable final String selection, @Nullable final String[] selectionArgs) {
         int match = URI_MATCHER.match(uri);
         switch (match) {
             case PETS:
@@ -100,8 +97,7 @@ public class PetProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull final Uri uri, String whereClause, String[] whereArgs) {
-        // Implement this to handle requests to delete one or more rows.
+    public int delete(@NonNull final Uri uri, @Nullable final String whereClause, @Nullable final String[] whereArgs) {
         int match = URI_MATCHER.match(uri);
         switch (match) {
             case PETS:
@@ -117,54 +113,79 @@ public class PetProvider extends ContentProvider {
         }
     }
 
+    /**
+     * The returned MIME type should start with "vnd.android.cursor.item/" for a single record,
+     * or "vnd.android.cursor.dir/" for multiple items
+     *
+     * @param uri {@code Uri} of resource
+     * @return {@code String} that describes the type of the data stored at the input Uri (MIME type)
+     */
     @Override
     public String getType(@NonNull final Uri uri) {
-        // TODO: Implement this to handle requests for the MIME type of the data
-        // at the given URI.
-        throw new UnsupportedOperationException("Not yet implemented");
+        String res;
+        int match = URI_MATCHER.match(uri);
+        switch (match) {
+            case PETS:
+                res = PetEntry.CONTENT_LIST_TYPE;
+                break;
+            case PET_ID:
+                res = PetEntry.CONTENT_ITEM_TYPE;
+                break;
+            default:
+                throw new IllegalUriException("Cannot getType unknown URI: %1$s", uri);
+        }
+        return res;
     }
 
 
     private void validationInsert(@Nullable final ContentValues values) {
+        if (getContext() == null) {
+            throw new RuntimeException("Context null!!!");
+        }
+
         if (values == null || values.size() == 0) {
-            throw new InvalidArgumentException(getContext(),R.string.missin_data_pet);
+            throw new InvalidArgumentException(getContext(), R.string.missin_data_pet);
         }
 
         final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
         if (TextUtils.isEmpty(name)) {
-            throw new InvalidArgumentException(getContext(),R.string.missing_name);
+            throw new InvalidArgumentException(getContext(), R.string.missing_name);
         }
 
         final String breed = values.getAsString(PetEntry.COLUMN_PET_BREED);
         if (TextUtils.isEmpty(breed)) {
-            throw new InvalidArgumentException(getContext(),R.string.missing_breed);
+            throw new InvalidArgumentException(getContext(), R.string.missing_breed);
         }
 
         final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
         if (gender == null) {
-            throw new InvalidArgumentException(getContext(),R.string.missing_gender);
+            throw new InvalidArgumentException(getContext(), R.string.missing_gender);
         }
         if (!PetEntry.isValidGender(gender)) {
-            throw new InvalidArgumentException(getContext(),R.string.invalid_gender);
+            throw new InvalidArgumentException(getContext(), R.string.invalid_gender);
         }
 
         final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
         if (weight == null) {
-            throw new InvalidArgumentException(getContext(),R.string.missing_weight);
+            throw new InvalidArgumentException(getContext(), R.string.missing_weight);
         }
         if (weight < 0) {
-            throw new InvalidArgumentException(getContext(),R.string.invalid_weight , weight);
+            throw new InvalidArgumentException(getContext(), R.string.invalid_weight, weight);
         }
     }
 
-    private int updatePet(Uri uri, ContentValues values, String whereClause, String[] whereArgs) {
+    private int updatePet(@NonNull final Uri uri, @Nullable final ContentValues values, @Nullable final String whereClause, @Nullable final String[] whereArgs) {
+        if (getContext() == null) {
+            throw new RuntimeException("Context null!!!");
+        }
         if (values == null || values.size() == 0) {
             return 0;
         }
+        Log.d(TAG, "updatePet uri " + uri);
         if (values.containsKey(PetEntry.COLUMN_PET_NAME)) {
             final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
             if (TextUtils.isEmpty(name)) {
-                throw new InvalidArgumentException(getContext(),R.string.missing_name);
+                throw new InvalidArgumentException(getContext(), R.string.missing_name);
             }
         }
 
@@ -178,19 +199,19 @@ public class PetProvider extends ContentProvider {
         if (values.containsKey(PetEntry.COLUMN_PET_GENDER)) {
             final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
             if (gender == null) {
-                throw new InvalidArgumentException(getContext(),R.string.missing_gender);
+                throw new InvalidArgumentException(getContext(), R.string.missing_gender);
             }
             if (!PetEntry.isValidGender(gender)) {
-                throw new InvalidArgumentException(getContext(),R.string.invalid_gender);
+                throw new InvalidArgumentException(getContext(), R.string.invalid_gender);
             }
         }
         if (values.containsKey(PetEntry.COLUMN_PET_WEIGHT)) {
             final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
             if (weight == null) {
-                throw new InvalidArgumentException(getContext(),R.string.missing_weight);
+                throw new InvalidArgumentException(getContext(), R.string.missing_weight);
             }
             if (weight < 0) {
-                throw new InvalidArgumentException(getContext(),R.string.invalid_weight , weight);
+                throw new InvalidArgumentException(getContext(), R.string.invalid_weight, weight);
             }
         }
         return mDatabase.update(PetEntry.TABLE_NAME, values, whereClause, whereArgs);
@@ -216,6 +237,8 @@ public class PetProvider extends ContentProvider {
         URI_MATCHER.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS, PETS);
         URI_MATCHER.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PET_ID);
     }
+
+    private static final String SUBTYPE_PET = "vnd.com.example.android.pet/pets";
 
     private static final String TAG = PetProvider.class.getSimpleName();
 }
