@@ -16,4 +16,11 @@
     <string name="gender_unknown">Unknown</string>
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
+    <string name="missin_data_pet">Missing data of pet</string>
+    <string name="missing_name">Pet requires a name</string>
+    <string name="missing_breed">Pet requires a breed</string>
+    <string name="missing_gender">Pet requires a gender</string>
+    <string name="invalid_gender">Pet requires a allowed gender</string>
+    <string name="missing_weight">Pet requires a weight</string>
+    <string name="invalid_weight">Pet requires a weight not negative: %1$s</string>
 </resources>

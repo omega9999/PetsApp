@@ -8,11 +8,15 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.PetContract.PetEntry;
+import com.example.android.petsapp.exception.IllegalUriException;
+import com.example.android.petsapp.exception.InvalidArgumentException;
 
 public class PetProvider extends ContentProvider {
     public PetProvider() {
@@ -20,10 +24,13 @@ public class PetProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        // TODO: Implement this to initialize your content provider on startup.
         if (getContext() != null) {
-            this.mDbHelper = new PetDbHelper(getContext());
+            PetDbHelper mDbHelper = new PetDbHelper(getContext());
+            Log.d(TAG, "Open connection (writable) to database");
             this.mDatabase = mDbHelper.getWritableDatabase();
+        }
+        else{
+            throw new RuntimeException("Context null!!!");
         }
         return true;
     }
@@ -31,6 +38,7 @@ public class PetProvider extends ContentProvider {
     @Override
     protected void finalize() throws Throwable {
         if (this.mDatabase != null) {
+            Log.d(TAG, "Close connection to database");
             this.mDatabase.close();
         }
         super.finalize();
@@ -52,7 +60,7 @@ public class PetProvider extends ContentProvider {
                 break;
             default:
                 // URI unknown
-                throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
+                throw new IllegalUriException("Cannot query unknown URI: %1$s", uri);
         }
         return cursor;
     }
@@ -68,13 +76,13 @@ public class PetProvider extends ContentProvider {
             return ContentUris.withAppendedId(uri, id);
         } else {
             // URI unknown
-            throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
+            throw new IllegalUriException("Cannot insert unknown URI: %1$s", uri);
         }
     }
 
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
+    public int update(@NonNull final Uri uri, @Nullable final ContentValues values, String selection,
                       String[] selectionArgs) {
         // TODO: Implement this to handle requests to update one or more rows.
         int match = URI_MATCHER.match(uri);
@@ -87,31 +95,30 @@ public class PetProvider extends ContentProvider {
                 return updatePet(uri, values, selectionLocal, selectionArgsLocal);
             default:
                 // URI unknown
-                throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
+                throw new IllegalUriException("Cannot update unknown URI: %1$s", uri);
         }
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull final Uri uri, String whereClause, String[] whereArgs) {
         // Implement this to handle requests to delete one or more rows.
         int match = URI_MATCHER.match(uri);
         switch (match) {
             case PETS:
-
-                break;
+                return mDatabase.delete(PetEntry.TABLE_NAME, whereClause, whereArgs);
             case PET_ID:
-
-                break;
+                String selectionLocal = PetEntry._ID + "=?";
+                String[] selectionArgsLocal = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return mDatabase.delete(PetEntry.TABLE_NAME, selectionLocal, selectionArgsLocal);
 
             default:
                 // URI unknown
-                throw new IllegalArgumentException(String.format("Cannot query unknown URI: %1$s", uri));
+                throw new IllegalUriException("Cannot delete unknown URI: %1$s", uri);
         }
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull final Uri uri) {
         // TODO: Implement this to handle requests for the MIME type of the data
         // at the given URI.
         throw new UnsupportedOperationException("Not yet implemented");
@@ -119,34 +126,34 @@ public class PetProvider extends ContentProvider {
 
 
     private void validationInsert(@Nullable final ContentValues values) {
-        if (values == null) {
-            throw new IllegalArgumentException("Missing data of pet");
+        if (values == null || values.size() == 0) {
+            throw new InvalidArgumentException(getContext(),R.string.missin_data_pet);
         }
 
         final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
         if (TextUtils.isEmpty(name)) {
-            throw new IllegalArgumentException("Pet requires a name");
+            throw new InvalidArgumentException(getContext(),R.string.missing_name);
         }
 
         final String breed = values.getAsString(PetEntry.COLUMN_PET_BREED);
         if (TextUtils.isEmpty(breed)) {
-            throw new IllegalArgumentException("Pet requires a breed");
+            throw new InvalidArgumentException(getContext(),R.string.missing_breed);
         }
 
         final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
         if (gender == null) {
-            throw new IllegalArgumentException("Pet requires a gender");
+            throw new InvalidArgumentException(getContext(),R.string.missing_gender);
         }
         if (!PetEntry.isValidGender(gender)) {
-            throw new IllegalArgumentException("Pet requires a allowed gender");
+            throw new InvalidArgumentException(getContext(),R.string.invalid_gender);
         }
 
         final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
         if (weight == null) {
-            throw new IllegalArgumentException("Pet requires a weight");
+            throw new InvalidArgumentException(getContext(),R.string.missing_weight);
         }
         if (weight < 0) {
-            throw new IllegalArgumentException("Pet requires a weight not negative: " + weight);
+            throw new InvalidArgumentException(getContext(),R.string.invalid_weight , weight);
         }
     }
 
@@ -157,43 +164,39 @@ public class PetProvider extends ContentProvider {
         if (values.containsKey(PetEntry.COLUMN_PET_NAME)) {
             final String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
             if (TextUtils.isEmpty(name)) {
-                throw new IllegalArgumentException("Pet requires a name");
+                throw new InvalidArgumentException(getContext(),R.string.missing_name);
             }
         }
 
         if (values.containsKey(PetEntry.COLUMN_PET_BREED)) {
             final String breed = values.getAsString(PetEntry.COLUMN_PET_BREED);
             if (TextUtils.isEmpty(breed)) {
-                throw new IllegalArgumentException("Pet requires a breed");
+                throw new InvalidArgumentException(getContext(), R.string.missing_breed);
             }
         }
 
         if (values.containsKey(PetEntry.COLUMN_PET_GENDER)) {
             final Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
             if (gender == null) {
-                throw new IllegalArgumentException("Pet requires a gender");
+                throw new InvalidArgumentException(getContext(),R.string.missing_gender);
             }
             if (!PetEntry.isValidGender(gender)) {
-                throw new IllegalArgumentException("Pet requires a allowed gender");
+                throw new InvalidArgumentException(getContext(),R.string.invalid_gender);
             }
         }
-
         if (values.containsKey(PetEntry.COLUMN_PET_WEIGHT)) {
             final Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
             if (weight == null) {
-                throw new IllegalArgumentException("Pet requires a weight");
+                throw new InvalidArgumentException(getContext(),R.string.missing_weight);
             }
             if (weight < 0) {
-                throw new IllegalArgumentException("Pet requires a weight not negative: " + weight);
+                throw new InvalidArgumentException(getContext(),R.string.invalid_weight , weight);
             }
         }
-
-
         return mDatabase.update(PetEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
 
-    private PetDbHelper mDbHelper;
     private SQLiteDatabase mDatabase;
 
     /**
