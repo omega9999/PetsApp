@@ -1,4 +1,4 @@
-package com.example.android.petsapp;
+package com.example.android.petsapp.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,14 +8,18 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.DbUtils;
 import com.example.android.petsapp.db.Pet;
+import com.example.android.petsapp.db.PetCursorAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**
@@ -42,12 +46,16 @@ public class CatalogActivity extends AppCompatActivity {
             Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
             startActivity(intent);
         });
+
+        final ListView listView = findViewById(R.id.list);
+        mCursorAdapter = DbUtils.getPetCursorAdapter(this);
+        listView.setAdapter(mCursorAdapter);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        displayDatabaseInfo();
+        DbUtils.reloadPetCursorAdapter(this, mCursorAdapter);
     }
 
     @Override
@@ -90,31 +98,18 @@ public class CatalogActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Temporary helper method to display information in the onscreen TextView about the state of
-     * the pets database.
-     */
-    private void displayDatabaseInfo() {
-        mHandler.post(() -> {
-            final String textPets = DbUtils.getPlainTextPets(this);
-            mUIHandler.post(() -> {
-                final TextView displayView = findViewById(R.id.text_view_pet);
-                displayView.setText(textPets);
-            });
-        });
-    }
+
 
     /**
      * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
      */
     private void insertPet() {
-        mHandler.post(() -> {
             final Pet dummy = Pet.getDummyInstance();
             DbUtils.insertPet(this, dummy);
-            displayDatabaseInfo();
-        });
+            DbUtils.reloadPetCursorAdapter(this, mCursorAdapter);
     }
 
+    private CursorAdapter mCursorAdapter;
     private HandlerThread mHandlerThread;
     private Handler mHandler;
     private Handler mUIHandler;

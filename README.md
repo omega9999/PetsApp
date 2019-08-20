@@ -25,6 +25,9 @@ Casi risolti:
     - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
     - risultato (Cursor,Uri,int): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI
 6) utilizzo annotazione @StringRes, https://developer.android.com/studio/write/annotations.htm
+7) per mostrare liste dei db si usano i custom CursorAdapter
+    tutorial: https://github.com/codepath/android_guides/wiki/Populating-a-ListView-with-a-CursorAdapter
+8) LayoutInflater dal context: LayoutInflater.from(context)
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
@@ -35,6 +38,7 @@ Altri link utili:
 Datatypes In SQLite: https://www.sqlite.org/datatype3.html
 Data and file storage: https://developer.android.com/guide/topics/data/data-storage.html
 https://developer.android.com/guide/components/intents-filters.html#Building
+https://developer.android.com/guide/topics/providers/contacts-provider.html
 
 Comandi sqlite3 utili (https://www.sqlite.org/cli.html):
 - .mode : provides several output options aside from column (".mode tabs" to have tab-separated values, ".mode ascii")

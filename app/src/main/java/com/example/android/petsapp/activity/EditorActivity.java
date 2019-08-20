@@ -1,4 +1,4 @@
-package com.example.android.petsapp;
+package com.example.android.petsapp.activity;
 
 
 import android.os.Bundle;
@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.DbUtils;
 import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
