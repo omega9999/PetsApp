@@ -61,6 +61,13 @@ public class PetProvider extends ContentProvider {
                 // URI unknown
                 throw new IllegalUriException("Cannot query unknown URI: %1$s", uri);
         }
+
+        if (getContext() != null) {
+            // Set notification URI on the Cursor,
+            // so we know what content URI the Cursor was created for.
+            // If the data at this URI changes, then we know we need to update the Cursor.
+            cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
         return cursor;
     }
 
@@ -71,6 +78,10 @@ public class PetProvider extends ContentProvider {
             validationInsert(values);
 
             long id = mDatabase.insert(PetEntry.TABLE_NAME, null, values);
+            if (getContext() != null) {
+                // notify all listeners that the data at the given URI has changed
+                getContext().getContentResolver().notifyChange(uri, null);
+            }
             // return Uri with id appended
             return ContentUris.withAppendedId(uri, id);
         } else {
@@ -99,18 +110,27 @@ public class PetProvider extends ContentProvider {
     @Override
     public int delete(@NonNull final Uri uri, @Nullable final String whereClause, @Nullable final String[] whereArgs) {
         int match = URI_MATCHER.match(uri);
+        String selectionLocal;
+        String[] selectionArgsLocal;
         switch (match) {
             case PETS:
-                return mDatabase.delete(PetEntry.TABLE_NAME, whereClause, whereArgs);
+                selectionLocal = null;
+                selectionArgsLocal = null;
+                break;
             case PET_ID:
-                String selectionLocal = PetEntry._ID + "=?";
-                String[] selectionArgsLocal = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return mDatabase.delete(PetEntry.TABLE_NAME, selectionLocal, selectionArgsLocal);
-
+                selectionLocal = PetEntry._ID + "=?";
+                selectionArgsLocal = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                break;
             default:
                 // URI unknown
                 throw new IllegalUriException("Cannot delete unknown URI: %1$s", uri);
         }
+        final int row = mDatabase.delete(PetEntry.TABLE_NAME, selectionLocal, selectionArgsLocal);
+        if (row > 0 && getContext() != null) {
+            // notify all listeners that the data at the given URI has changed
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return row;
     }
 
     /**
@@ -161,7 +181,7 @@ public class PetProvider extends ContentProvider {
         if (gender == null) {
             throw new InvalidArgumentException(getContext(), R.string.missing_gender);
         }
-        if (!PetEntry.isValidGender(gender)) {
+        if (PetEntry.isInvalidGender(gender)) {
             throw new InvalidArgumentException(getContext(), R.string.invalid_gender);
         }
 
@@ -201,7 +221,7 @@ public class PetProvider extends ContentProvider {
             if (gender == null) {
                 throw new InvalidArgumentException(getContext(), R.string.missing_gender);
             }
-            if (!PetEntry.isValidGender(gender)) {
+            if (PetEntry.isInvalidGender(gender)) {
                 throw new InvalidArgumentException(getContext(), R.string.invalid_gender);
             }
         }
@@ -214,7 +234,14 @@ public class PetProvider extends ContentProvider {
                 throw new InvalidArgumentException(getContext(), R.string.invalid_weight, weight);
             }
         }
-        return mDatabase.update(PetEntry.TABLE_NAME, values, whereClause, whereArgs);
+
+        final int rows = mDatabase.update(PetEntry.TABLE_NAME, values, whereClause, whereArgs);
+        if (rows > 0 && getContext() != null) {
+            // notify all listeners that the data at the given URI has changed
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return rows;
     }
 
 
@@ -237,8 +264,6 @@ public class PetProvider extends ContentProvider {
         URI_MATCHER.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS, PETS);
         URI_MATCHER.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PET_ID);
     }
-
-    private static final String SUBTYPE_PET = "vnd.com.example.android.pet/pets";
 
     private static final String TAG = PetProvider.class.getSimpleName();
 }

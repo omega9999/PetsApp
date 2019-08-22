@@ -16,11 +16,15 @@ Casi risolti:
     - https://developer.android.com/reference/android/database/Cursor.html
     - https://developer.android.com/guide/topics/providers/content-provider-basics.html#Query
 4) controllo compile-time dei valori corretti in un insieme: https://developer.android.com/reference/android/support/annotation/IntDef
-5) ContentResolver, ContentProvider e CursorLoader:
+5) ContentResolver, ContentProvider, CursorAdapter, CursorLoader:
     - https://developer.android.com/guide/topics/manifest/provider-element.html
     - https://developer.android.com/reference/android/content/ContentProvider.html
     - https://developer.android.com/guide/topics/providers/content-provider-creating.html
     - https://developer.android.com/reference/android/content/UriMatcher.html
+    - https://developer.android.com/reference/androidx/loader/content/CursorLoader.html
+    - https://developer.android.com/reference/android/widget/CursorAdapter.html
+    - https://www.grokkingandroid.com/android-tutorial-writing-your-own-content-provider/
+    - setNotificationUri: https://developer.android.com/reference/android/database/Cursor.html#setNotificationUri(android.content.ContentResolver,%20android.net.Uri)
 5.1) schema: Content Provider puo' esporre le sue funzionalita' anche ad altre app esterne + check centralizzato dei dati inseriti
     - comando (Uri): UI -> ContentResolver -> ContentProvider -> DbHelper -> DB
     - risultato (Cursor,Uri,int): DB -> DbHelper -> ContentProvider -> ContentResolver -> UI

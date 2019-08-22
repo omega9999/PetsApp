@@ -1,10 +1,11 @@
 package com.example.android.petsapp.activity;
 
 
+import android.app.LoaderManager;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +17,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
@@ -24,18 +27,16 @@ import com.example.android.petsapp.db.DbUtils;
 import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
 
+import java.util.Locale;
+
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     public EditorActivity() {
         super();
         Log.i(TAG, "init HandlerThread");
-        this.mHandlerThread = new HandlerThread(this.getClass() + ".Thread");
-        this.mHandlerThread.start(); // close it with mHandlerThread.quit()
-        this.mHandler = new Handler(this.mHandlerThread.getLooper());
-        this.mUIHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -70,12 +71,20 @@ public class EditorActivity extends AppCompatActivity {
         mWeightEditText = findViewById(R.id.edit_pet_weight);
         mGenderSpinner = findViewById(R.id.spinner_gender);
 
+        mUri = getIntent().getData();
+        if (mUri != null) {
+            setTitle(R.string.editor_activity_title_edit_pet);
+            getLoaderManager().initLoader(PET_LOADER_ID, null, this);
+
+        } else {
+            setTitle(R.string.editor_activity_title_new_pet);
+        }
+
         setupSpinner();
     }
 
     @Override
     protected void onDestroy() {
-        this.mHandlerThread.quit();
         super.onDestroy();
     }
 
@@ -85,7 +94,7 @@ public class EditorActivity extends AppCompatActivity {
     private void setupSpinner() {
         // Create adapter for spinner. The list options are from the String array it will use
         // the spinner will use the default layout
-        ArrayAdapter genderSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.array_gender_options, android.R.layout.simple_spinner_item);
+        ArrayAdapter genderSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.array_gender_string_options, android.R.layout.simple_spinner_item);
 
         // Specify dropdown layout style - simple list view with 1 item per line
         genderSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -124,17 +133,56 @@ public class EditorActivity extends AppCompatActivity {
                 .setBreed(mBreedEditText.getText().toString().trim())
                 .setGender(mGender)
                 .setWeight(Integer.valueOf(mWeightEditText.getText().toString().trim()));
-        mHandler.post(() -> {
-            final Pet newPet = DbUtils.insertPet(this, pet);
-            mUIHandler.post(() -> {
-                if (newPet.getId() > 0) {
-                    Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
-                }
-            });
-            EditorActivity.this.finish();
-        });
+        final Pet newPet = DbUtils.insertPet(this, pet);
+        if (newPet.getId() > 0) {
+            Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        }
+        EditorActivity.this.finish();
+    }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(final int id, @Nullable final Bundle args) {
+        return DbUtils.getPetLoader(this, mUri);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.moveToFirst()) {
+            final Pet pet = DbUtils.convertCursor2Pet(this, data);
+            if (pet != null) {
+                mNameEditText.setText(pet.getName());
+                mBreedEditText.setText(pet.getBreed());
+                mWeightEditText.setText(String.format("%1$s",pet.getWeight()));
+                mGender = pet.getGender();
+                selectSpinner(mGender);
+            }
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mNameEditText.setText(null);
+        mBreedEditText.setText(null);
+        mWeightEditText.setText(null);
+        mGender = PetEntry.GENDER_UNKNOWN;
+        selectSpinner(mGender);
+    }
+
+    private void selectSpinner(int gender){
+        switch (gender) {
+            case PetEntry.GENDER_MALE:
+                mGenderSpinner.setSelection(1);
+                break;
+            case PetEntry.GENDER_FEMALE:
+                mGenderSpinner.setSelection(2);
+                break;
+            default:
+                mGenderSpinner.setSelection(0);
+                break;
+        }
     }
 
     private EditText mNameEditText;
@@ -143,11 +191,11 @@ public class EditorActivity extends AppCompatActivity {
     private Spinner mGenderSpinner;
     private int mGender;
 
-    private HandlerThread mHandlerThread;
-    private Handler mHandler;
-    private Handler mUIHandler;
+    private Uri mUri = null;
 
+    private static final String URI_BUNDLE = "URI_BUNDLE";
 
+    private static final int PET_LOADER_ID = 1;
     private static final String TAG = EditorActivity.class.getSimpleName();
 
 }

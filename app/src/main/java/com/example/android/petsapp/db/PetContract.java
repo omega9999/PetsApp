@@ -26,7 +26,7 @@ public final class PetContract {
 
     public static abstract class PetEntry implements BaseColumns {
         // Uri for ContentProvider to access table pets
-        static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
 
         /**
          * The MIME type of the {@link #CONTENT_URI} for a list of pets.
@@ -63,8 +63,8 @@ public final class PetContract {
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
 
-        static boolean isValidGender(int gender) {
-            return gender == GENDER_UNKNOWN || gender == GENDER_MALE || gender == GENDER_FEMALE;
+        static boolean isInvalidGender(int gender) {
+            return gender != GENDER_UNKNOWN && gender != GENDER_MALE && gender != GENDER_FEMALE;
         }
 
         static void onCreate(@NonNull final SQLiteDatabase db) {

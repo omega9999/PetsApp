@@ -9,6 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.android.petsapp.R;
 
@@ -22,7 +23,7 @@ public class PetCursorAdapter extends CursorAdapter {
      * @param context The context
      * @param cursor  The cursor from which to get the data.
      */
-    public PetCursorAdapter(@NonNull final Context context, @NonNull final Cursor cursor) {
+    public PetCursorAdapter(@NonNull final Context context, @Nullable final Cursor cursor) {
         super(context, cursor, 0);
     }
 
@@ -37,7 +38,7 @@ public class PetCursorAdapter extends CursorAdapter {
      * @return the newly created list item view.
      */
     @Override
-    public View newView(@NonNull final Context context, @NonNull final Cursor cursor, @NonNull final ViewGroup parent) {
+    public View newView(@NonNull final Context context, @Nullable final Cursor cursor, @NonNull final ViewGroup parent) {
         return LayoutInflater.from(context).inflate(R.layout.list_item, parent, false);
     }
 
