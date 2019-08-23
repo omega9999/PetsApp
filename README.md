@@ -35,7 +35,8 @@ Casi risolti:
 9) https://developer.android.com/reference/android/view/View.OnTouchListener.html
 10) Building an Alert Dialog: https://developer.android.com/guide/topics/ui/dialogs.html
 11) per andare all'attività padre: NavUtils.navigateUpFromSameTask(this), https://developer.android.com/guide/navigation
-12) modifica programmatica al menù opzioni: 
+12) modifica programmatica al menù opzioni: invalidateOptionsMenu() -> onPrepareOptionsMenu(): https://developer.android.com/guide/topics/ui/menus.html#options-menu
+
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)

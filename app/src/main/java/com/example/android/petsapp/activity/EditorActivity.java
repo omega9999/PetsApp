@@ -106,10 +106,22 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         } else {
             setTitle(R.string.editor_activity_title_new_pet);
             mId = null;
+            // regenerate menu' invalidateOptionsMenu() -> onPrepareOptionsMenu()
+            invalidateOptionsMenu();
         }
-
         setupSpinner();
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(@NonNull final Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (mUri == null) {
+            final MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+
 
     @Override
     protected void onDestroy() {
