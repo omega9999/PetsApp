@@ -59,6 +59,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 }
                 return true;
             case R.id.action_delete:
+                showDeleteConfirmationDialog();
                 return true;
             case android.R.id.home:
                 // go back to parent activity
@@ -265,6 +266,34 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
         final AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void showDeleteConfirmationDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, (dialog, id) -> deletePet());
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> {
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Perform the deletion of the pet in the database.
+     */
+    private void deletePet() {
+        if (mId != null){
+            final int rows = DbUtils.deletePet(this, mId);
+            if (rows == 1) {
+                Toast.makeText(EditorActivity.this, getString(R.string.editor_delete_pet_successful), Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(EditorActivity.this, getString(R.string.editor_delete_pet_failed), Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private EditText mNameEditText;

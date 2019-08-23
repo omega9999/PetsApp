@@ -47,6 +47,11 @@ public class DbUtils {
         return context.getContentResolver().update(ContentUris.withAppendedId(PetEntry.CONTENT_URI,pet.getId()), values, null, null);
     }
 
+    @CheckResult
+    public static int deletePet(@NonNull final Context context, @NonNull final long id) {
+        return context.getContentResolver().delete(ContentUris.withAppendedId(PetEntry.CONTENT_URI,id),null, null);
+    }
+
     public static Pet convertCursor2Pet(@NonNull final Context context, @NonNull final Cursor cursor) {
         if (cursor.isAfterLast()){
             return null;
