@@ -2,6 +2,7 @@ package com.example.android.petsapp.activity;
 
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -17,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
@@ -26,8 +26,6 @@ import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.DbUtils;
 import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
-
-import java.util.Locale;
 
 
 /**
@@ -49,7 +47,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
-                insertPet();
+                savePet();
                 return true;
             case R.id.action_delete:
                 return true;
@@ -71,13 +69,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mWeightEditText = findViewById(R.id.edit_pet_weight);
         mGenderSpinner = findViewById(R.id.spinner_gender);
 
+
         mUri = getIntent().getData();
         if (mUri != null) {
             setTitle(R.string.editor_activity_title_edit_pet);
             getLoaderManager().initLoader(PET_LOADER_ID, null, this);
-
+            mId = ContentUris.parseId(mUri);
         } else {
             setTitle(R.string.editor_activity_title_new_pet);
+            mId = null;
         }
 
         setupSpinner();
@@ -127,18 +127,30 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     }
 
 
-    private void insertPet() {
+    private void savePet() {
         final Pet pet = new Pet();
         pet.setName(mNameEditText.getText().toString().trim())
                 .setBreed(mBreedEditText.getText().toString().trim())
                 .setGender(mGender)
                 .setWeight(Integer.valueOf(mWeightEditText.getText().toString().trim()));
-        final Pet newPet = DbUtils.insertPet(this, pet);
-        if (newPet.getId() > 0) {
-            Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        if (mId != null){
+            pet.setId(mId);
+            int rows = DbUtils.updatePet(this, pet);
+            if (rows == 1){
+                Toast.makeText(EditorActivity.this, getString(R.string.editor_update_pet_successful), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(EditorActivity.this, getString(R.string.editor_update_pet_failed), Toast.LENGTH_SHORT).show();
+            }
         }
+        else{
+            final Pet newPet = DbUtils.insertPet(this, pet);
+            if (newPet.getId() > 0) {
+                Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+            }
+        }
+
         EditorActivity.this.finish();
     }
 
@@ -193,6 +205,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private Uri mUri = null;
 
+    private Long mId = null;
     private static final String URI_BUNDLE = "URI_BUNDLE";
 
     private static final int PET_LOADER_ID = 1;

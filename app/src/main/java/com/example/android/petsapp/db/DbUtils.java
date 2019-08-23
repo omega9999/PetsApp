@@ -35,6 +35,18 @@ public class DbUtils {
         return petRes;
     }
 
+    @CheckResult
+    public static int updatePet(@NonNull final Context context, @NonNull final Pet pet) {
+
+        final ContentValues values = new ContentValues();
+        values.put(PetEntry.COLUMN_PET_NAME, pet.getName());
+        values.put(PetEntry.COLUMN_PET_BREED, pet.getBreed());
+        values.put(PetEntry.COLUMN_PET_GENDER, pet.getGender());
+        values.put(PetEntry.COLUMN_PET_WEIGHT, pet.getWeight());
+
+        return context.getContentResolver().update(ContentUris.withAppendedId(PetEntry.CONTENT_URI,pet.getId()), values, null, null);
+    }
+
     public static Pet convertCursor2Pet(@NonNull final Context context, @NonNull final Cursor cursor) {
         if (cursor.isAfterLast()){
             return null;
