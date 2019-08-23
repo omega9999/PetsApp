@@ -38,4 +38,7 @@
     <string name="delete_dialog_msg">Delete this pet?</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="delete_all_dialog_msg">Delete ALL pet?</string>
+    <string name="delete_all_pet_successful">Delete all pets (%1$s)</string>
+    <string name="unknown_breed">Unknown breed</string>
 </resources>

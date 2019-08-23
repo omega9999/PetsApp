@@ -48,8 +48,13 @@ public class DbUtils {
     }
 
     @CheckResult
-    public static int deletePet(@NonNull final Context context, @NonNull final long id) {
+    public static int deletePet(@NonNull final Context context, final long id) {
         return context.getContentResolver().delete(ContentUris.withAppendedId(PetEntry.CONTENT_URI,id),null, null);
+    }
+
+    @CheckResult
+    public static int deleteAllPet(@NonNull final Context context) {
+        return context.getContentResolver().delete(PetEntry.CONTENT_URI,null, null);
     }
 
     public static Pet convertCursor2Pet(@NonNull final Context context, @NonNull final Cursor cursor) {

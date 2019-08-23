@@ -14,10 +14,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.android.petsapp.R;
@@ -101,13 +103,30 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         switch (item.getItemId()) {
             case R.id.action_insert_dummy_data:
                 insertPet();
-
                 return true;
             case R.id.action_delete_all_entries:
-                // Do nothing for now
+                showDeleteConfirmationDialog();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showDeleteConfirmationDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_all_dialog_msg);
+        builder.setPositiveButton(R.string.delete, (dialog, id) -> deletePet());
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> {
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void deletePet() {
+        final int rows = DbUtils.deleteAllPet(this);
+        Toast.makeText(this, getString(R.string.delete_all_pet_successful, String.valueOf(rows)), Toast.LENGTH_SHORT).show();
     }
 
 
@@ -128,7 +147,23 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        mPetNumber = data.getCount();
         mCursorAdapter.swapCursor(data);
+        invalidateOptionsMenu();
+    }
+
+
+    @Override
+    public boolean onPrepareOptionsMenu(@NonNull final Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        final MenuItem menuItem = menu.findItem(R.id.action_delete_all_entries);
+        if (mPetNumber == 0) {
+            menuItem.setVisible(false);
+        }
+        else{
+            menuItem.setVisible(true);
+        }
+        return true;
     }
 
     @Override
@@ -137,6 +172,8 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     }
 
     private CursorAdapter mCursorAdapter;
+
+    private int mPetNumber = 0;
 
     private static final int PET_LOADER_ID = 1;
     private static final String TAG = CatalogActivity.class.getSimpleName();
