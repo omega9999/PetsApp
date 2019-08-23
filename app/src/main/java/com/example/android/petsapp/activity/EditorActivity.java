@@ -3,6 +3,7 @@ package com.example.android.petsapp.activity;
 
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -18,7 +20,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
@@ -26,6 +30,7 @@ import com.example.android.petsapp.R;
 import com.example.android.petsapp.db.DbUtils;
 import com.example.android.petsapp.db.Pet;
 import com.example.android.petsapp.db.PetContract.PetEntry;
+import com.example.android.petsapp.exception.InvalidArgumentException;
 
 
 /**
@@ -47,16 +52,35 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
-                savePet();
+                try {
+                    savePet();
+                } catch (InvalidArgumentException e) {
+                    Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                }
                 return true;
             case R.id.action_delete:
                 return true;
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
+                // go back to parent activity
+                if (!mPetHasChanged) {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return true;
+                }
+                else{
+                    final DialogInterface.OnClickListener discardButtonClickListener =
+                            (dialogInterface, i) -> NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    showUnsavedChangesDialog(discardButtonClickListener);
+                    return true;
+                }
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private final View.OnTouchListener mTouchListener = (view, motionEvent) -> {
+        mPetHasChanged = true;
+        view.performClick();
+        return false;
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +93,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mWeightEditText = findViewById(R.id.edit_pet_weight);
         mGenderSpinner = findViewById(R.id.spinner_gender);
 
+        mNameEditText.setOnTouchListener(mTouchListener);
+        mBreedEditText.setOnTouchListener(mTouchListener);
+        mWeightEditText.setOnTouchListener(mTouchListener);
+        mGenderSpinner.setOnTouchListener(mTouchListener);
 
         mUri = getIntent().getData();
         if (mUri != null) {
@@ -87,6 +115,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     protected void onDestroy() {
         super.onDestroy();
     }
+
 
     /**
      * Setup the dropdown spinner that allows the user to select the gender of the pet.
@@ -126,31 +155,36 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
     }
 
+    private int string2Int(@Nullable final String str) {
+        if (str == null || TextUtils.isEmpty(str.trim())) {
+            return 0;
+        } else {
+            return Integer.valueOf(str.trim());
+        }
+    }
 
     private void savePet() {
         final Pet pet = new Pet();
         pet.setName(mNameEditText.getText().toString().trim())
                 .setBreed(mBreedEditText.getText().toString().trim())
                 .setGender(mGender)
-                .setWeight(Integer.valueOf(mWeightEditText.getText().toString().trim()));
-        if (mId != null){
+                .setWeight(string2Int(mWeightEditText.getText().toString()));
+        if (mId != null) {
             pet.setId(mId);
             int rows = DbUtils.updatePet(this, pet);
-            if (rows == 1){
+            if (rows == 1) {
                 Toast.makeText(EditorActivity.this, getString(R.string.editor_update_pet_successful), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(EditorActivity.this, getString(R.string.editor_update_pet_failed), Toast.LENGTH_SHORT).show();
+                throw new InvalidArgumentException(this, R.string.editor_update_pet_failed);
             }
-        }
-        else{
+        } else {
             final Pet newPet = DbUtils.insertPet(this, pet);
             if (newPet.getId() > 0) {
-                Toast.makeText(EditorActivity.this, String.format("Pet saved with id: %1$s", newPet.getId()), Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditorActivity.this, getString(R.string.editor_insert_pet_successful, String.valueOf(newPet.getId())), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(EditorActivity.this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+                throw new InvalidArgumentException(this, R.string.editor_insert_pet_failed);
             }
         }
-
         EditorActivity.this.finish();
     }
 
@@ -167,7 +201,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             if (pet != null) {
                 mNameEditText.setText(pet.getName());
                 mBreedEditText.setText(pet.getBreed());
-                mWeightEditText.setText(String.format("%1$s",pet.getWeight()));
+                mWeightEditText.setText(String.format("%1$s", pet.getWeight()));
                 mGender = pet.getGender();
                 selectSpinner(mGender);
             }
@@ -183,7 +217,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         selectSpinner(mGender);
     }
 
-    private void selectSpinner(int gender){
+    private void selectSpinner(int gender) {
         switch (gender) {
             case PetEntry.GENDER_MALE:
                 mGenderSpinner.setSelection(1);
@@ -197,6 +231,30 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (!mPetHasChanged) {
+            super.onBackPressed();
+            return;
+        }
+        final DialogInterface.OnClickListener discardButtonClickListener = (dialogInterface, i) -> finish();
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
+
+    private void showUnsavedChangesDialog(@NonNull final DialogInterface.OnClickListener discardButtonClickListener) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.unsaved_changes_dialog_msg);
+        builder.setPositiveButton(R.string.discard, discardButtonClickListener);
+        builder.setNegativeButton(R.string.keep_editing, (dialog, id) -> {
+            if (dialog != null) {
+                dialog.dismiss();
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     private EditText mNameEditText;
     private EditText mBreedEditText;
     private EditText mWeightEditText;
@@ -204,9 +262,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private int mGender;
 
     private Uri mUri = null;
+    private boolean mPetHasChanged = false;
+
 
     private Long mId = null;
-    private static final String URI_BUNDLE = "URI_BUNDLE";
 
     private static final int PET_LOADER_ID = 1;
     private static final String TAG = EditorActivity.class.getSimpleName();

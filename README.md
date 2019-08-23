@@ -32,6 +32,10 @@ Casi risolti:
 7) per mostrare liste dei db si usano i custom CursorAdapter
     tutorial: https://github.com/codepath/android_guides/wiki/Populating-a-ListView-with-a-CursorAdapter
 8) LayoutInflater dal context: LayoutInflater.from(context)
+9) https://developer.android.com/reference/android/view/View.OnTouchListener.html
+10) Building an Alert Dialog: https://developer.android.com/guide/topics/ui/dialogs.html
+11) per andare all'attività padre: NavUtils.navigateUpFromSameTask(this), https://developer.android.com/guide/navigation
+12) modifica programmatica al menù opzioni: 
 
 TODO:
 1) sostituire i vari layout con le ConstraintLayout (vedere https://github.com/chrisbanes/cheesesquare)
