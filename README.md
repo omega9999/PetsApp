@@ -58,4 +58,4 @@ Comandi sqlite3 utili (https://www.sqlite.org/cli.html):
 
 
 Progetti come esercizio:
-
+- Inventory App: https://review.udacity.com/#!/rubrics/163/view
